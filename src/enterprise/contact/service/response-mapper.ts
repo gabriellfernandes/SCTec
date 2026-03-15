@@ -16,6 +16,8 @@ export class ContactResponseMapper {
     const dto = new ContactDto();
     dto.id = entity.id;
     dto.enterpriseId = entity.enterprise?.id ?? '';
+    dto.name = entity.name ?? null;
+    dto.department = entity.department ?? null;
     dto.emails = [];
     dto.phones = [];
     return dto;

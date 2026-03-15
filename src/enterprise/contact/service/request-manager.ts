@@ -31,5 +31,7 @@ export class ContactRequestManager {
 
   mapRequestData(entity: ContactEntity, request: ContactRequest): void {
     entity.enterprise = { id: request.enterpriseId } as EnterpriseEntity;
+    entity.name = request.name?.trim() || null;
+    entity.department = request.department?.trim() || null;
   }
 }

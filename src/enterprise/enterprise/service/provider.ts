@@ -5,7 +5,6 @@ import {
   PageResult,
 } from '../../../shared/service/abstract-provider';
 import {
-  FindOptionsOrder,
   FindOptionsRelations,
   FindOptionsWhere,
   IsNull,
@@ -33,38 +32,72 @@ export class EnterpriseProvider extends AbstractProvider<EnterpriseEntity> {
   findAll(
     search: EnterpriseSearchRequest,
   ): Promise<PageResult<EnterpriseEntity>> {
-    const where: FindOptionsWhere<EnterpriseEntity> = {};
+    const page = search.page && search.page > 0 ? search.page : 1;
+    const limit = search.limit && search.limit > 0 ? Math.min(search.limit, 100) : 10;
 
-    where.city = {
-      ...(search.cityId ? { id: search.cityId } : {}),
-      deletedAt: IsNull(),
-    };
+    const queryBuilder = this.repository
+      .createQueryBuilder('enterprise')
+      .leftJoinAndSelect('enterprise.city', 'city', 'city.deletedAt IS NULL')
+      .leftJoinAndSelect('enterprise.segment', 'segment', 'segment.deletedAt IS NULL')
+      .leftJoinAndSelect('enterprise.contacts', 'contact')
+      .leftJoinAndSelect('contact.emails', 'email')
+      .leftJoinAndSelect('contact.phones', 'phone')
+      .where('enterprise.deletedAt IS NULL')
+      .andWhere('city.id IS NOT NULL')
+      .andWhere('segment.id IS NOT NULL')
+      .distinct(true);
 
-    where.segment = {
-      ...(search.segmentId ? { id: search.segmentId } : {}),
-      deletedAt: IsNull(),
-    };
-
-    return this.findPage({
-      page: search.page,
-      limit: search.limit,
-      where,
-      order: this.resolveOrder(search.sort, search.order),
-      relations: this.defaultRelations(),
-    });
-  }
-
-  private resolveOrder(
-    sort?: string,
-    order?: 'ASC' | 'DESC',
-  ): FindOptionsOrder<EnterpriseEntity> {
-    const direction = order ?? 'ASC';
-
-    if (sort === 'ownerName' || sort === 'active') {
-      return { [sort]: direction };
+    if (search.cityId) {
+      queryBuilder.andWhere('city.id = :cityId', { cityId: search.cityId });
     }
 
-    return { name: direction };
+    if (search.segmentId) {
+      queryBuilder.andWhere('segment.id = :segmentId', {
+        segmentId: search.segmentId,
+      });
+    }
+
+    this.applyOrder(queryBuilder, search.sort, search.order);
+
+    queryBuilder.skip((page - 1) * limit).take(limit);
+
+    return queryBuilder.getManyAndCount().then(([items, total]) => ({
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    }));
+  }
+
+  private applyOrder(
+    queryBuilder: ReturnType<Repository<EnterpriseEntity>['createQueryBuilder']>,
+    sort?: string,
+    order?: 'ASC' | 'DESC',
+  ): void {
+    const direction = order ?? 'ASC';
+
+    if (sort === 'ownerName') {
+      queryBuilder.orderBy('enterprise.ownerName', direction);
+      return;
+    }
+
+    if (sort === 'active') {
+      queryBuilder.orderBy('enterprise.active', direction);
+      return;
+    }
+
+    if (sort === 'cityName') {
+      queryBuilder.orderBy('city.name', direction);
+      return;
+    }
+
+    if (sort === 'segmentName') {
+      queryBuilder.orderBy('segment.name', direction);
+      return;
+    }
+
+    queryBuilder.orderBy('enterprise.name', direction);
   }
 
   private defaultRelations(): FindOptionsRelations<EnterpriseEntity> {

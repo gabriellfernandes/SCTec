@@ -21,6 +21,12 @@ export class ContactEntity {
   @Column({ default: true })
   active: boolean;
 
+  @Column({ name: 'name', type: 'varchar', nullable: true })
+  name?: string | null;
+
+  @Column({ name: 'department', type: 'varchar', nullable: true })
+  department?: string | null;
+
   @ManyToOne(() => EnterpriseEntity, (enterprise) => enterprise.contacts, {
     nullable: false,
     onDelete: 'CASCADE',
