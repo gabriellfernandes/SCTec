@@ -8,6 +8,7 @@ import {
   FindOptionsOrder,
   FindOptionsRelations,
   FindOptionsWhere,
+  IsNull,
   Repository,
 } from 'typeorm';
 import { ContactPhoneSearchRequest } from '../dto/contact-phone.search-request';
@@ -24,17 +25,21 @@ export class ContactPhoneProvider extends AbstractProvider<PhoneEntity> {
 
   findByIdOrNull(id: string): Promise<PhoneEntity | null> {
     return this.findOne({
-      where: { id },
+      where: {
+        id,
+        contact: { deletedAt: IsNull() },
+      },
       relations: this.defaultRelations(),
     });
   }
 
   findAll(search: ContactPhoneSearchRequest): Promise<PageResult<PhoneEntity>> {
-    const where: FindOptionsWhere<PhoneEntity> = {};
-
-    if (search.contactId) {
-      where.contact = { id: search.contactId };
-    }
+    const where: FindOptionsWhere<PhoneEntity> = {
+      contact: {
+        ...(search.contactId ? { id: search.contactId } : {}),
+        deletedAt: IsNull(),
+      },
+    };
 
     return this.findPage({
       page: search.page,
