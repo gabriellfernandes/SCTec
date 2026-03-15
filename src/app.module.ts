@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CityModule } from './enterprise/city/module';
 import { EnterpriseModule } from './enterprise/enterprise/module';
+import { SegmentModule } from './enterprise/segment/module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { EnterpriseModule } from './enterprise/enterprise/module';
       }),
     }),
     CityModule,
+    SegmentModule,
     EnterpriseModule,
   ],
   controllers: [AppController],
