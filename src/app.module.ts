@@ -4,6 +4,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CityModule } from './enterprise/city/module';
+import { ContactEmailModule } from './enterprise/contact-email/module';
+import { ContactPhoneModule } from './enterprise/contact-phone/module';
+import { ContactModule } from './enterprise/contact/module';
 import { EnterpriseModule } from './enterprise/enterprise/module';
 import { SegmentModule } from './enterprise/segment/module';
 
@@ -27,6 +30,9 @@ import { SegmentModule } from './enterprise/segment/module';
       }),
     }),
     CityModule,
+    ContactModule,
+    ContactEmailModule,
+    ContactPhoneModule,
     SegmentModule,
     EnterpriseModule,
   ],
