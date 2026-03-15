@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { UserModule } from './auth/user/module';
 import { CityModule } from './enterprise/city/module';
 import { ContactEmailModule } from './enterprise/contact-email/module';
 import { ContactPhoneModule } from './enterprise/contact-phone/module';
@@ -29,6 +30,7 @@ import { SegmentModule } from './enterprise/segment/module';
         synchronize: configService.get<string>('DB_SYNC', 'false') === 'true',
       }),
     }),
+    UserModule,
     CityModule,
     ContactModule,
     ContactEmailModule,
