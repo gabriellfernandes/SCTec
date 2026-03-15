@@ -1,10 +1,26 @@
 import {
+  ArrayNotEmpty,
   IsBoolean,
   IsEmail,
-  IsIn,
   IsNotEmpty,
+  IsOptional,
   IsString,
+  IsUUID,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class ContactRequest {
+  @IsOptional()
+  @ArrayNotEmpty()
+  @IsEmail({}, { each: true })
+  emails?: string[];
+
+  @IsOptional()
+  @ArrayNotEmpty()
+  @IsString({ each: true })
+  phones?: string[];
+}
 
 export class EnterpriseRequest {
   @IsString()
@@ -15,16 +31,16 @@ export class EnterpriseRequest {
   @IsNotEmpty()
   ownerName: string;
 
-  @IsString()
-  @IsNotEmpty()
-  city: string;
+  @IsUUID()
+  cityId: string;
 
-  @IsString()
-  @IsIn(['Technology', 'Commerce', 'Industry', 'Services', 'Agribusiness'])
-  segment: string;
+  @IsUUID()
+  segmentId: string;
 
-  @IsEmail()
-  contact: string;
+  @ArrayNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => ContactRequest)
+  contacts: ContactRequest[];
 
   @IsBoolean()
   active: boolean;
