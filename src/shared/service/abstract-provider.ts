@@ -2,6 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import {
   FindManyOptions,
   FindOptionsOrder,
+  FindOptionsRelations,
   FindOneOptions,
   FindOptionsWhere,
   ObjectLiteral,
@@ -34,12 +35,14 @@ export abstract class AbstractProvider<
     limit?: number;
     where?: FindOptionsWhere<T> | FindOptionsWhere<T>[];
     order?: FindOptionsOrder<T>;
+    relations?: FindOptionsRelations<T>;
   }): Promise<PageResult<T>> {
     const page = this.resolvePage(options.page);
     const limit = this.resolveLimit(options.limit);
     const [items, total] = await this.repository.findAndCount({
       where: options.where,
       order: options.order,
+      relations: options.relations,
       skip: (page - 1) * limit,
       take: limit,
     });

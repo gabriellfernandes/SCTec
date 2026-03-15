@@ -1,22 +1,16 @@
-import { IsIn, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsOptional, IsString, IsUUID } from 'class-validator';
 import { BaseSearchRequest } from '../../../shared/dto/base-search.request';
 
-const ENTERPRISE_SORT_FIELDS = [
-  'name',
-  'ownerName',
-  'city',
-  'segment',
-] as const;
+const ENTERPRISE_SORT_FIELDS = ['name', 'ownerName', 'active'] as const;
 
 export class EnterpriseSearchRequest extends BaseSearchRequest {
   @IsOptional()
-  @IsString()
-  city?: string;
+  @IsUUID()
+  cityId?: string;
 
   @IsOptional()
-  @IsString()
-  @IsIn(['Technology', 'Commerce', 'Industry', 'Services', 'Agribusiness'])
-  segment?: string;
+  @IsUUID()
+  segmentId?: string;
 
   @IsOptional()
   @IsString()
