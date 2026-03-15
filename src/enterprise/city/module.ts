@@ -9,9 +9,10 @@ import { CityManager } from './service/manager';
 import { CityProvider } from './service/provider';
 import { CityRequestManager } from './service/request-manager';
 import { CityResponseMapper } from './service/response-mapper';
+import { EnterpriseEntity } from '../enterprise/entity/enterprise.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CityEntity])],
+  imports: [TypeOrmModule.forFeature([CityEntity, EnterpriseEntity])],
   controllers: [
     CityCreateController,
     CityReadController,

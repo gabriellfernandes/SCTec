@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcryptjs';
-import { LoginDto } from '../dto/login.dto';
+import { AuthMeDto, LoginDto } from '../dto/login.dto';
 import { LoginRequest } from '../dto/login.request';
 import { UserProvider } from '../../user/service/provider';
 
@@ -39,7 +39,20 @@ export class AuthService {
         name: user.name,
         email: user.email,
         role: user.role,
+        active: user.active,
       },
+    };
+  }
+
+  async me(userId: string): Promise<AuthMeDto> {
+    const user = await this.userProvider.findById(userId, 'User not found');
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      active: user.active,
     };
   }
 }

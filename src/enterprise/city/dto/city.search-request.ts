@@ -1,7 +1,7 @@
 import { IsIn, IsOptional, IsString } from 'class-validator';
 import { BaseSearchRequest } from '../../../shared/dto/base-search.request';
 
-const CITY_SORT_FIELDS = ['name'] as const;
+const CITY_SORT_FIELDS = ['name', 'createdAt', 'updatedAt'] as const;
 
 export class CitySearchRequest extends BaseSearchRequest {
   @IsOptional()

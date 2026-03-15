@@ -4,7 +4,12 @@ import {
   AbstractProvider,
   PageResult,
 } from '../../../shared/service/abstract-provider';
-import { FindOptionsOrder, FindOptionsWhere, Repository } from 'typeorm';
+import {
+  FindOptionsOrder,
+  FindOptionsWhere,
+  ILike,
+  Repository,
+} from 'typeorm';
 import { SegmentSearchRequest } from '../dto/segment.search-request';
 import { SegmentEntity } from '../entity/segment.entity';
 
@@ -20,8 +25,10 @@ export class SegmentProvider extends AbstractProvider<SegmentEntity> {
   findAll(search: SegmentSearchRequest): Promise<PageResult<SegmentEntity>> {
     const where: FindOptionsWhere<SegmentEntity> = {};
 
-    if (search.name) {
-      where.name = search.name;
+    const normalizedName = search.name?.trim();
+
+    if (normalizedName) {
+      where.name = ILike(`%${normalizedName}%`);
     }
 
     return this.findPage({
@@ -40,6 +47,14 @@ export class SegmentProvider extends AbstractProvider<SegmentEntity> {
 
     if (sort === 'name') {
       return { name: direction };
+    }
+
+    if (sort === 'createdAt') {
+      return { createdAt: direction };
+    }
+
+    if (sort === 'updatedAt') {
+      return { updatedAt: direction };
     }
 
     return { name: direction };

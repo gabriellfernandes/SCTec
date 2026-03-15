@@ -4,7 +4,7 @@ import {
   AbstractProvider,
   PageResult,
 } from '../../../shared/service/abstract-provider';
-import { FindOptionsOrder, FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsOrder, FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { CitySearchRequest } from '../dto/city.search-request';
 import { CityEntity } from '../entity/city.entity';
 
@@ -20,8 +20,10 @@ export class CityProvider extends AbstractProvider<CityEntity> {
   findAll(search: CitySearchRequest): Promise<PageResult<CityEntity>> {
     const where: FindOptionsWhere<CityEntity> = {};
 
-    if (search.name) {
-      where.name = search.name;
+    const normalizedName = search.name?.trim();
+
+    if (normalizedName) {
+      where.name = ILike(`%${normalizedName}%`);
     }
 
     return this.findPage({
@@ -40,6 +42,14 @@ export class CityProvider extends AbstractProvider<CityEntity> {
 
     if (sort === 'name') {
       return { name: direction };
+    }
+
+    if (sort === 'createdAt') {
+      return { createdAt: direction };
+    }
+
+    if (sort === 'updatedAt') {
+      return { updatedAt: direction };
     }
 
     return { name: direction };
