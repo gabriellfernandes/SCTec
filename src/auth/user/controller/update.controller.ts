@@ -1,4 +1,6 @@
 import { Body, Controller, Param, Patch } from '@nestjs/common';
+import { Roles } from '../../auth/decorator/roles.decorator';
+import { UserRole } from '../entity/user.entity';
 import { UserDto } from '../dto/user.dto';
 import { UserRequest } from '../dto/user.request';
 import { UserRequestManager } from '../service/request-manager';
@@ -11,6 +13,7 @@ export class UserUpdateController {
     private readonly responseMapper: UserResponseMapper,
   ) {}
 
+  @Roles(UserRole.ADMIN)
   @Patch(':id')
   async update(
     @Param('id') id: string,
