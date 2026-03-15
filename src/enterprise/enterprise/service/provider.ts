@@ -8,6 +8,7 @@ import {
   FindOptionsOrder,
   FindOptionsRelations,
   FindOptionsWhere,
+  IsNull,
   Repository,
 } from 'typeorm';
 import { EnterpriseSearchRequest } from '../dto/enterprise.search-request';
@@ -34,13 +35,15 @@ export class EnterpriseProvider extends AbstractProvider<EnterpriseEntity> {
   ): Promise<PageResult<EnterpriseEntity>> {
     const where: FindOptionsWhere<EnterpriseEntity> = {};
 
-    if (search.cityId) {
-      where.city = { id: search.cityId };
-    }
+    where.city = {
+      ...(search.cityId ? { id: search.cityId } : {}),
+      deletedAt: IsNull(),
+    };
 
-    if (search.segmentId) {
-      where.segment = { id: search.segmentId };
-    }
+    where.segment = {
+      ...(search.segmentId ? { id: search.segmentId } : {}),
+      deletedAt: IsNull(),
+    };
 
     return this.findPage({
       page: search.page,

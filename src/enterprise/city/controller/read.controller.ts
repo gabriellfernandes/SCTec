@@ -1,4 +1,6 @@
 import { Controller, Get, Param, Query, Res } from '@nestjs/common';
+import { Roles } from '../../../auth/auth/decorator/roles.decorator';
+import { UserRole } from '../../../auth/user/entity/user.entity';
 import type { Response } from 'express';
 import { setPaginationHeaders } from '../../../shared/http/pagination-header';
 import { CityDto } from '../dto/city.dto';
@@ -13,12 +15,14 @@ export class CityReadController {
     private readonly responseMapper: CityResponseMapper,
   ) {}
 
+  @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.VIEWER)
   @Get(':id')
   async findById(@Param('id') id: string): Promise<CityDto> {
     const entity = await this.provider.findById(id, 'City not found');
     return this.responseMapper.map(entity);
   }
 
+  @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.VIEWER)
   @Get()
   async findAll(
     @Query() search: CitySearchRequest,

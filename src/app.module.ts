@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth/module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { UserModule } from './auth/user/module';
 import { CityModule } from './enterprise/city/module';
 import { ContactEmailModule } from './enterprise/contact-email/module';
 import { ContactPhoneModule } from './enterprise/contact-phone/module';
@@ -29,6 +31,8 @@ import { SegmentModule } from './enterprise/segment/module';
         synchronize: configService.get<string>('DB_SYNC', 'false') === 'true',
       }),
     }),
+    AuthModule,
+    UserModule,
     CityModule,
     ContactModule,
     ContactEmailModule,

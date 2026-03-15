@@ -10,7 +10,11 @@ import { EnterpriseEntity } from '../entity/enterprise.entity';
 @Injectable()
 export class EnterpriseResponseMapper {
   mapMultiple(entities: EnterpriseEntity[]): Promise<EnterpriseDto[]> {
-    return Promise.resolve(entities.map((entity) => this.map(entity)));
+    return Promise.resolve(
+      entities
+        .filter((entity) => Boolean(entity.city) && Boolean(entity.segment))
+        .map((entity) => this.map(entity)),
+    );
   }
 
   map(entity: EnterpriseEntity): EnterpriseDto {
@@ -19,14 +23,15 @@ export class EnterpriseResponseMapper {
     dto.name = entity.name;
     dto.ownerName = entity.ownerName;
     dto.active = entity.active;
+
     const city = new CityDto();
-    city.id = entity.city.id;
-    city.name = entity.city.name;
+    city.id = entity.city?.id ?? '';
+    city.name = entity.city?.name ?? '';
     dto.city = city;
 
     const segment = new SegmentDto();
-    segment.id = entity.segment.id;
-    segment.name = entity.segment.name;
+    segment.id = entity.segment?.id ?? '';
+    segment.name = entity.segment?.name ?? '';
     dto.segment = segment;
 
     dto.contacts = (entity.contacts ?? []).map((contact) => {

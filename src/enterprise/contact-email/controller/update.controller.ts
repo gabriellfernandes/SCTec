@@ -1,4 +1,6 @@
 import { Body, Controller, Param, Patch } from '@nestjs/common';
+import { Roles } from '../../../auth/auth/decorator/roles.decorator';
+import { UserRole } from '../../../auth/user/entity/user.entity';
 import { ContactEmailDto } from '../dto/contact-email.dto';
 import { ContactEmailRequest } from '../dto/contact-email.request';
 import { ContactEmailRequestManager } from '../service/request-manager';
@@ -11,6 +13,7 @@ export class ContactEmailUpdateController {
     private readonly responseMapper: ContactEmailResponseMapper,
   ) {}
 
+  @Roles(UserRole.ADMIN, UserRole.EDITOR)
   @Patch(':id')
   async update(
     @Param('id') id: string,
