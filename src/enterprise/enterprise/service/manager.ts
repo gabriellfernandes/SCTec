@@ -17,6 +17,18 @@ export class EnterpriseManager {
   }
 
   async update(entity: EnterpriseEntity): Promise<EnterpriseEntity> {
+    return this.updateWithContacts(entity, true);
+  }
+
+  async updateWithContacts(
+    entity: EnterpriseEntity,
+    shouldReplaceContacts: boolean,
+  ): Promise<EnterpriseEntity> {
+    if (!shouldReplaceContacts) {
+      await this.repository.save(entity);
+      return entity;
+    }
+
     return this.repository.manager.transaction(async (transactionManager) => {
       await transactionManager
         .createQueryBuilder()

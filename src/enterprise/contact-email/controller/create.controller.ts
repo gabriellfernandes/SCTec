@@ -1,4 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { Roles } from '../../../auth/auth/decorator/roles.decorator';
+import { UserRole } from '../../../auth/user/entity/user.entity';
 import { ContactEmailDto } from '../dto/contact-email.dto';
 import { ContactEmailRequest } from '../dto/contact-email.request';
 import { ContactEmailRequestManager } from '../service/request-manager';
@@ -11,6 +13,7 @@ export class ContactEmailCreateController {
     private readonly responseMapper: ContactEmailResponseMapper,
   ) {}
 
+  @Roles(UserRole.ADMIN, UserRole.EDITOR)
   @Post()
   async create(@Body() request: ContactEmailRequest): Promise<ContactEmailDto> {
     const entity = await this.requestManager.create(request);

@@ -9,6 +9,8 @@ import { SegmentEntity } from '../../segment/entity/segment.entity';
 import { EnterpriseManager } from './manager';
 import { EnterpriseProvider } from './provider';
 
+type ContactRequestPayload = NonNullable<EnterpriseRequest['contacts']>[number];
+
 @Injectable()
 export class EnterpriseRequestManager {
   constructor(
@@ -18,7 +20,10 @@ export class EnterpriseRequestManager {
 
   create(request: EnterpriseRequest): Promise<EnterpriseEntity> {
     const entity = new EnterpriseEntity();
-    this.mapRequestData(entity, request);
+    this.mapBaseRequestData(entity, request);
+    entity.contacts = (request.contacts ?? []).map((contactRequest) =>
+      this.buildContactEntity(entity, contactRequest),
+    );
     return this.manager.create(entity);
   }
 
@@ -27,8 +32,17 @@ export class EnterpriseRequestManager {
     request: EnterpriseRequest,
   ): Promise<EnterpriseEntity> {
     const entity = await this.provider.findById(id, 'Enterprise not found');
-    this.mapRequestData(entity, request);
-    return this.manager.update(entity);
+    this.mapBaseRequestData(entity, request);
+
+    const shouldReplaceContacts = Array.isArray(request.contacts);
+
+    if (shouldReplaceContacts) {
+      entity.contacts = request.contacts!.map((contactRequest) =>
+        this.buildContactEntity(entity, contactRequest),
+      );
+    }
+
+    return this.manager.updateWithContacts(entity, shouldReplaceContacts);
   }
 
   async delete(id: string): Promise<void> {
@@ -36,26 +50,32 @@ export class EnterpriseRequestManager {
     await this.manager.delete(entity);
   }
 
-  mapRequestData(entity: EnterpriseEntity, request: EnterpriseRequest): void {
+  private mapBaseRequestData(entity: EnterpriseEntity, request: EnterpriseRequest): void {
     entity.name = request.name;
     entity.ownerName = request.ownerName;
     entity.city = { id: request.cityId } as CityEntity;
     entity.segment = { id: request.segmentId } as SegmentEntity;
-    entity.contacts = request.contacts.map((contactRequest) => {
-      const contact = new ContactEntity();
-      contact.enterprise = entity;
-      contact.emails = (contactRequest.emails ?? []).map((address) => {
-        const email = new EmailEntity();
-        email.address = address;
-        return email;
-      });
-      contact.phones = (contactRequest.phones ?? []).map((number) => {
-        const phone = new PhoneEntity();
-        phone.number = number;
-        return phone;
-      });
-      return contact;
-    });
+
     entity.active = request.active;
+  }
+
+  private buildContactEntity(
+    enterprise: EnterpriseEntity,
+    contactRequest: ContactRequestPayload,
+  ): ContactEntity {
+    const contact = new ContactEntity();
+    contact.enterprise = enterprise;
+    contact.emails = (contactRequest.emails ?? []).map((address) => {
+      const email = new EmailEntity();
+      email.address = address;
+      return email;
+    });
+    contact.phones = (contactRequest.phones ?? []).map((number) => {
+      const phone = new PhoneEntity();
+      phone.number = number;
+      return phone;
+    });
+
+    return contact;
   }
 }

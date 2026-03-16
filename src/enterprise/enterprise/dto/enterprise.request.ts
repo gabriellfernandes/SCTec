@@ -1,5 +1,5 @@
 import {
-  ArrayNotEmpty,
+  IsArray,
   IsBoolean,
   IsEmail,
   IsNotEmpty,
@@ -12,12 +12,12 @@ import { Type } from 'class-transformer';
 
 class ContactRequest {
   @IsOptional()
-  @ArrayNotEmpty()
+  @IsArray()
   @IsEmail({}, { each: true })
   emails?: string[];
 
   @IsOptional()
-  @ArrayNotEmpty()
+  @IsArray()
   @IsString({ each: true })
   phones?: string[];
 }
@@ -37,10 +37,11 @@ export class EnterpriseRequest {
   @IsUUID()
   segmentId: string;
 
-  @ArrayNotEmpty()
+  @IsOptional()
+  @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ContactRequest)
-  contacts: ContactRequest[];
+  contacts?: ContactRequest[];
 
   @IsBoolean()
   active: boolean;

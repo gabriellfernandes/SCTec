@@ -12,6 +12,8 @@ export class SegmentResponseMapper {
     const dto = new SegmentDto();
     dto.id = entity.id;
     dto.name = entity.name;
+    dto.createdAt = entity.createdAt;
+    dto.updatedAt = entity.updatedAt;
     return dto;
   }
 }

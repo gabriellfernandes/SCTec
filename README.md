@@ -1,98 +1,385 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# SCTEC API (Back-end)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST para gerenciamento de empreendimentos catarinenses, desenvolvida com NestJS, TypeORM e PostgreSQL.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Este projeto atende ao desafio de CRUD do programa SCTEC com foco em organização modular, regras de domínio claras e execução simples em ambiente local.
 
-## Description
+## Repositórios relacionados
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Back-end (este projeto): `https://github.com/gabriellfernandes/SCTec`
+- Front-end: `https://github.com/gabriellfernandes/SCTec-front-end`
 
-## Project setup
+## Objetivo da solução
 
-```bash
-$ npm install
+A API centraliza o cadastro e a manutenção de informações sobre empreendimentos em Santa Catarina, cobrindo:
+
+- nome do empreendimento
+- nome do responsável
+- município
+- segmento
+- meios de contato
+- status (ativo/inativo)
+
+Além do CRUD principal de empresas, a solução expõe módulos de apoio (cidades, segmentos e contatos) e autenticação com perfis de acesso.
+
+## Stack utilizada
+
+- Node.js 22
+- NestJS 11
+- TypeScript
+- TypeORM
+- PostgreSQL 16
+- Docker e Docker Compose
+- JWT (autenticação)
+- class-validator e class-transformer
+
+## Arquitetura
+
+O projeto segue arquitetura modular por domínio.
+
+Cada módulo é dividido em camadas com responsabilidade explícita:
+
+- `controller/`: entrada HTTP e delegação
+- `dto/`: contratos de entrada e saída
+- `entity/`: entidades TypeORM
+- `service/provider.ts`: leitura/consulta
+- `service/manager.ts`: escrita e persistência
+- `service/request-manager.ts`: orquestração de escrita
+- `service/response-mapper.ts`: mapeamento de entity para DTO
+
+Estrutura principal:
+
+```text
+src/
+  app.module.ts
+  main.ts
+  auth/
+    auth/
+    user/
+  enterprise/
+    enterprise/
+    city/
+    segment/
+    contact/
+    contact-email/
+    contact-phone/
+  database/
+    data-source.ts
+    migrations/
+  shared/
+    dto/
+    service/
+    http/
 ```
 
-## Compile and run the project
+## Modelo de domínio
 
-```bash
-# development
-$ npm run start
+Relacionamentos implementados:
 
-# watch mode
-$ npm run start:dev
+- `enterprise` N:1 `city`
+- `enterprise` N:1 `segment`
+- `enterprise` 1:N `contact`
+- `contact` 1:N `email`
+- `contact` 1:N `phone`
 
-# production mode
-$ npm run start:prod
+Observações de modelagem:
+
+- `city` e `segment` funcionam como entidades de referência.
+- `contact` suporta campos de identidade (`name`, `department`) além de emails e telefones.
+- Exclusões seguem soft delete em todas as entidades.
+
+## Segurança e acesso
+
+A API utiliza JWT com dois guards globais:
+
+- `JwtAuthGuard`: exige token por padrão
+- `RolesGuard`: valida perfil por rota
+
+Perfis disponíveis:
+
+- `admin`
+- `editor`
+- `viewer`
+
+Regras gerais:
+
+- leitura: `admin`, `editor`, `viewer`
+- escrita (create/update): `admin`, `editor`
+- exclusão: `admin`
+
+Rotas públicas:
+
+- `POST /api/auth/login`
+
+Rotas autenticadas:
+
+- `GET /api/auth/me`
+- todos os demais recursos
+
+## Endpoints principais
+
+Base URL local: `http://localhost:3000/api`
+
+### Auth
+
+- `POST /auth/login`
+- `GET /auth/me`
+
+### Enterprises
+
+- `POST /enterprises`
+- `GET /enterprises`
+- `GET /enterprises/:id`
+- `PATCH /enterprises/:id`
+- `DELETE /enterprises/:id`
+
+Filtros e ordenação em listagem:
+
+- `cityId`
+- `segmentId`
+- `sort`: `name | ownerName | active | cityName | segmentName`
+- `order`: `ASC | DESC`
+- `page`, `limit`
+
+### Cities
+
+- `POST /cities`
+- `GET /cities`
+- `GET /cities/:id`
+- `PATCH /cities/:id`
+- `DELETE /cities/:id`
+
+### Segments
+
+- `POST /segments`
+- `GET /segments`
+- `GET /segments/:id`
+- `PATCH /segments/:id`
+- `DELETE /segments/:id`
+
+### Contacts
+
+- `POST /contacts`
+- `GET /contacts`
+- `GET /contacts/:id`
+- `PATCH /contacts/:id`
+- `DELETE /contacts/:id`
+
+### Contact Emails
+
+- `POST /contact-emails`
+- `GET /contact-emails`
+- `GET /contact-emails/:id`
+- `PATCH /contact-emails/:id`
+- `DELETE /contact-emails/:id`
+
+### Contact Phones
+
+- `POST /contact-phones`
+- `GET /contact-phones`
+- `GET /contact-phones/:id`
+- `PATCH /contact-phones/:id`
+- `DELETE /contact-phones/:id`
+
+## Regras de negócio implementadas
+
+- Não permite excluir município com empresas vinculadas (retorna `409 Conflict`).
+- Não permite excluir segmento com empresas vinculadas (retorna `409 Conflict`).
+- Validação de payload com `ValidationPipe` global (`whitelist`, `transform`, `forbidNonWhitelisted`).
+- Paginação padrão com cabeçalhos HTTP (`x-total`, `x-page`, `x-limit`, `x-total-pages`).
+
+## Variáveis de ambiente
+
+Arquivo base: `.env.example`
+
+```env
+NODE_ENV=development
+PORT=3000
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=atec
+DB_SYNC=false
+
+JWT_SECRET=change_me
+CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
 ```
 
-## Run tests
+## Como executar
+
+### Opção 1: Docker Compose (recomendado)
+
+No diretório `project/back-end`:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+docker compose up -d --build
 ```
 
-## Deployment
+Isso sobe:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+- PostgreSQL em `localhost:5432`
+- API em `localhost:3000`
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Opção 2: execução local
+
+1. Instale dependências:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm install
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+2. Configure `.env` com base no `.env.example`.
 
-## Resources
+3. Execute migrations:
 
-Check out a few resources that may come in handy when working with NestJS:
+```bash
+npm run migration:run
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+4. Execute o seed inicial:
 
-## Support
+```bash
+npm run seed
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+5. Inicie a API:
 
-## Stay in touch
+```bash
+npm run start:dev
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Credenciais criadas pelo seed:
 
-## License
+- admin: `admin@sctec.local` / `admin1234`
+- editor: `editor@sctec.local` / `edit1234`
+- viewer: `viewer@sctec.local` / `view1234`
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Migrations
+
+Comandos úteis:
+
+```bash
+npm run migration:run
+npm run migration:revert
+npm run migration:generate
+```
+
+Data source do TypeORM CLI:
+
+- `src/database/data-source.ts`
+
+## Scripts úteis
+
+```bash
+npm run start:dev
+npm run build
+npm run start:prod
+npm run lint
+npm run test
+npm run seed
+```
+
+## Dados iniciais (seed)
+
+O seed cria dados reais para facilitar validação funcional da API:
+
+- 3 usuários fixos (`admin`, `editor`, `viewer`)
+- municípios de Santa Catarina com grafia correta (ex.: Florianópolis, Joinville, Blumenau, Tubarão, Lages)
+- segmentos obrigatórios do desafio
+- empresas com relacionamento completo de cidade e segmento
+- contatos com `name`, `department`, emails e telefones
+
+Usuários fixos do seed:
+
+- admin: `admin@sctec.local` / `admin1234`
+- editor: `editor@sctec.local` / `edit1234`
+- viewer: `viewer@sctec.local` / `view1234`
+
+Municípios seedados:
+
+- Florianópolis
+- Joinville
+- Blumenau
+- São José
+- Chapecó
+- Criciúma
+- Itajaí
+- Jaraguá do Sul
+- Lages
+- Balneário Camboriú
+- Tubarão
+
+Comportamento do seed:
+
+- idempotente para usuários, cidades, segmentos e empresas
+- atualiza credenciais e perfis dos usuários seed
+- sincroniza contatos das empresas seed para manter consistência de ambiente
+
+Arquivo:
+
+- `src/database/seeds/seed.ts`
+
+## Exemplos de requests
+
+Documentação de payloads e chamadas por rota:
+
+- `docs/api-examples.md`
+
+Observação sobre API docs:
+
+- no momento não há Swagger/OpenAPI publicado;
+- a referência oficial da API está em `docs/api-examples.md`.
+
+## Exemplo de autenticação
+
+Request:
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@sctec.local",
+  "password": "your_password"
+}
+```
+
+Response (resumo):
+
+```json
+{
+  "accessToken": "...",
+  "expiresIn": "1h",
+  "user": {
+    "id": "...",
+    "name": "...",
+    "email": "...",
+    "role": "admin",
+    "active": true
+  }
+}
+```
+
+## CORS e integração com front-end
+
+- Prefixo global de rotas: `/api`
+- CORS configurado por `CORS_ORIGIN`
+- Origens padrão: `http://localhost:5173` e `http://127.0.0.1:5173`
+
+## Status do escopo
+
+Itens atendidos no back-end:
+
+- CRUD de empreendimentos
+- CRUD de municípios
+- CRUD de segmentos
+- CRUD de contatos (incluindo emails e telefones)
+- filtros de listagem por cidade e segmento
+- paginação e ordenação
+- autenticação e autorização por perfil
+
+## Link do vídeo pitch
+
+- `https://drive.google.com/file/d/1AUmTMw4Ahx6utli9To85rgX0Y_HBaInE/view?usp=sharing`

@@ -12,6 +12,8 @@ export class CityResponseMapper {
     const dto = new CityDto();
     dto.id = entity.id;
     dto.name = entity.name;
+    dto.createdAt = entity.createdAt;
+    dto.updatedAt = entity.updatedAt;
     return dto;
   }
 }

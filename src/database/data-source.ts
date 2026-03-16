@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
+import { UserEntity } from '../auth/user/entity/user.entity';
 import { CityEntity } from '../enterprise/city/entity/city.entity';
 import { ContactEntity } from '../enterprise/contact/entity/contact.entity';
 import { EmailEntity } from '../enterprise/contact-email/entity/email.entity';
@@ -16,6 +17,7 @@ export default new DataSource({
   database: process.env.DB_DATABASE ?? 'atec',
   entities: [
     EnterpriseEntity,
+    UserEntity,
     CityEntity,
     SegmentEntity,
     ContactEntity,

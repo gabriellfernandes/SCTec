@@ -9,9 +9,10 @@ import { SegmentManager } from './service/manager';
 import { SegmentProvider } from './service/provider';
 import { SegmentRequestManager } from './service/request-manager';
 import { SegmentResponseMapper } from './service/response-mapper';
+import { EnterpriseEntity } from '../enterprise/entity/enterprise.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([SegmentEntity])],
+  imports: [TypeOrmModule.forFeature([SegmentEntity, EnterpriseEntity])],
   controllers: [
     SegmentCreateController,
     SegmentReadController,

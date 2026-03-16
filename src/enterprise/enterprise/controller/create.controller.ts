@@ -1,4 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { Roles } from '../../../auth/auth/decorator/roles.decorator';
+import { UserRole } from '../../../auth/user/entity/user.entity';
 import { EnterpriseDto } from '../dto/enterprise.dto';
 import { EnterpriseRequest } from '../dto/enterprise.request';
 import { EnterpriseRequestManager } from '../service/request-manager';
@@ -11,6 +13,7 @@ export class EnterpriseCreateController {
     private readonly responseMapper: EnterpriseResponseMapper,
   ) {}
 
+  @Roles(UserRole.ADMIN, UserRole.EDITOR)
   @Post()
   async create(@Body() request: EnterpriseRequest): Promise<EnterpriseDto> {
     const entity = await this.requestManager.create(request);

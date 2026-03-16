@@ -8,6 +8,7 @@ import {
   FindOptionsOrder,
   FindOptionsRelations,
   FindOptionsWhere,
+  IsNull,
   Repository,
 } from 'typeorm';
 import { ContactEmailSearchRequest } from '../dto/contact-email.search-request';
@@ -24,17 +25,21 @@ export class ContactEmailProvider extends AbstractProvider<EmailEntity> {
 
   findByIdOrNull(id: string): Promise<EmailEntity | null> {
     return this.findOne({
-      where: { id },
+      where: {
+        id,
+        contact: { deletedAt: IsNull() },
+      },
       relations: this.defaultRelations(),
     });
   }
 
   findAll(search: ContactEmailSearchRequest): Promise<PageResult<EmailEntity>> {
-    const where: FindOptionsWhere<EmailEntity> = {};
-
-    if (search.contactId) {
-      where.contact = { id: search.contactId };
-    }
+    const where: FindOptionsWhere<EmailEntity> = {
+      contact: {
+        ...(search.contactId ? { id: search.contactId } : {}),
+        deletedAt: IsNull(),
+      },
+    };
 
     return this.findPage({
       page: search.page,

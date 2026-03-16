@@ -1,4 +1,6 @@
 import { Body, Controller, Param, Patch } from '@nestjs/common';
+import { Roles } from '../../../auth/auth/decorator/roles.decorator';
+import { UserRole } from '../../../auth/user/entity/user.entity';
 import { CityDto } from '../dto/city.dto';
 import { CityRequest } from '../dto/city.request';
 import { CityRequestManager } from '../service/request-manager';
@@ -11,6 +13,7 @@ export class CityUpdateController {
     private readonly responseMapper: CityResponseMapper,
   ) {}
 
+  @Roles(UserRole.ADMIN, UserRole.EDITOR)
   @Patch(':id')
   async update(
     @Param('id') id: string,
