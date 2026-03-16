@@ -381,3 +381,5 @@ Itens atendidos no back-end:
 - autenticação e autorização por perfil
 
 ## Link do vídeo pitch
+
+- `https://drive.google.com/file/d/1AUmTMw4Ahx6utli9To85rgX0Y_HBaInE/view?usp=sharing`
